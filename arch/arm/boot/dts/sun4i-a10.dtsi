@@ -239,7 +239,6 @@
 					status = "disabled";
 				};
 			};
-		};
 
 			sram_c: sram@1d00000 {
 				compatible = "mmio-sram";
@@ -253,6 +252,7 @@
 					reg = <0x000000 0x80000>;
 				};
 			};
+		};
 
 		dma: dma-controller@1c02000 {
 			compatible = "allwinner,sun4i-a10-dma";
