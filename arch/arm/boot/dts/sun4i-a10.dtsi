@@ -429,7 +429,7 @@
 				 <&ccu CLK_DRAM_VE>;
 			clock-names = "ahb", "mod", "ram";
 			resets = <&ccu RST_VE>;
-			interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
+			interrupts = <53>;
 			allwinner,sram = <&ve_sram 1>;
 		};
 
