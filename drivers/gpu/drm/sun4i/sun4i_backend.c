@@ -970,6 +970,7 @@ static int sun4i_backend_remove(struct platform_device *pdev)
 
 static const struct sun4i_backend_quirks sun4i_backend_quirks = {
 	.needs_output_muxing = true,
+	.supports_lowest_plane_alpha = true,
 };
 
 static const struct sun4i_backend_quirks sun5i_backend_quirks = {
