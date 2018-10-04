@@ -67,10 +67,10 @@ static void cedrus_fill_ref_pic(struct cedrus_h264_sram_ref_pic *pic,
 	pic->bottom_field_order_cnt = bottom_field_order_cnt;
 	pic->frame_info = pic_type << 8;
 
-	pic->luma_ptr = cedrus_buf_addr(buf, fmt, 0) - PHYS_OFFSET;
-	pic->chroma_ptr = cedrus_buf_addr(buf, fmt, 1) - PHYS_OFFSET;
-	pic->extra_data_ptr = extra_buf - PHYS_OFFSET;
-	pic->extra_data_end = (extra_buf - PHYS_OFFSET) + extra_buf_len;
+	pic->luma_ptr = cedrus_buf_addr(buf, fmt, 0);
+	pic->chroma_ptr = cedrus_buf_addr(buf, fmt, 1);
+	pic->extra_data_ptr = extra_buf;
+	pic->extra_data_end = extra_buf + extra_buf_len;
 }
 
 static void cedrus_write_frame_list(struct cedrus_ctx *ctx,
@@ -291,7 +291,6 @@ static void cedrus_set_params(struct cedrus_ctx *ctx,
 	cedrus_write(dev, VE_H264_VLD_OFFSET, offset);
 
 	src_buf_addr = vb2_dma_contig_plane_dma_addr(&run->src->vb2_buf, 0);
-	src_buf_addr -= PHYS_OFFSET;
 	cedrus_write(dev, VE_H264_VLD_END, src_buf_addr + VBV_SIZE - 1);
 	cedrus_write(dev, VE_H264_VLD_ADDR,
 		     VE_H264_VLD_ADDR_VAL(src_buf_addr) | VE_H264_VLD_ADDR_FIRST | VE_H264_VLD_ADDR_VALID | VE_H264_VLD_ADDR_LAST);
@@ -434,9 +433,9 @@ static void cedrus_h264_setup(struct cedrus_ctx *ctx,
 
 	cedrus_write(dev, VE_H264_SDROT_CTRL, 0);
 	cedrus_write(dev, VE_H264_EXTRA_BUFFER1,
-		     ctx->codec.h264.pic_info_buf_dma - PHYS_OFFSET);
+		     ctx->codec.h264.pic_info_buf_dma);
 	cedrus_write(dev, VE_H264_EXTRA_BUFFER2,
-		     (ctx->codec.h264.pic_info_buf_dma - PHYS_OFFSET) + 0x48000);
+		     ctx->codec.h264.pic_info_buf_dma + 0x48000);
 
 	cedrus_write_scaling_lists(ctx, run);
 	cedrus_write_frame_list(ctx, run);
