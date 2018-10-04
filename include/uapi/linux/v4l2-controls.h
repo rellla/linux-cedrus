@@ -1235,10 +1235,10 @@ struct v4l2_ctrl_h264_scaling_matrix {
 };
 
 struct v4l2_h264_weight_factors {
-	__s8 luma_weight[32];
-	__s8 luma_offset[32];
-	__s8 chroma_weight[32][2];
-	__s8 chroma_offset[32][2];
+	__s16 luma_weight[32];
+	__s16 luma_offset[32];
+	__s16 chroma_weight[32][2];
+	__s16 chroma_offset[32][2];
 };
 
 struct v4l2_h264_pred_weight_table {
