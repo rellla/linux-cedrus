@@ -283,10 +283,12 @@ static void cedrus_set_params(struct cedrus_ctx *ctx,
 	const struct v4l2_ctrl_h264_slice_param *slice = run->h264.slice_param;
 	const struct v4l2_ctrl_h264_pps *pps = run->h264.pps;
 	const struct v4l2_ctrl_h264_sps *sps = run->h264.sps;
+	unsigned int first_mb_in_slice, pic_width_in_mbs;
 	struct cedrus_dev *dev = ctx->dev;
 	dma_addr_t src_buf_addr;
 	u32 offset = slice->header_bit_size;
 	u32 len = (slice->size * 8) - offset;
+	bool mbaff_picture;
 	u32 reg;
 
 	cedrus_write(dev, 0x220, 0x02000400);
@@ -348,8 +350,16 @@ static void cedrus_set_params(struct cedrus_ctx *ctx,
 		reg |= BIT(16);
 	cedrus_write(dev, VE_H264_FRAME_SIZE, reg);
 
+	mbaff_picture = !(slice->flags & V4L2_H264_SLICE_FLAG_FIELD_PIC) &&
+		(sps->flags & V4L2_H264_SPS_FLAG_MB_ADAPTIVE_FRAME_FIELD);
+	pic_width_in_mbs = sps->pic_width_in_mbs_minus1 + 1;
+	first_mb_in_slice = slice->first_mb_in_slice;
+
 	// slice parameters
 	reg = 0;
+	reg |= ((first_mb_in_slice % pic_width_in_mbs) & 0xff) << 24;
+	reg |= ((first_mb_in_slice / pic_width_in_mbs) & 0xff) *
+		(mbaff_picture ? 2 : 1) << 16;
 	if (dec_param->nal_ref_idc != 0)
 		reg |= BIT(12);
 	reg |= (slice->slice_type & 0xf) << 8;
