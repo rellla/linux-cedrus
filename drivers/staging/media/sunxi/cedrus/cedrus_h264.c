@@ -377,6 +377,7 @@ static void cedrus_set_params(struct cedrus_ctx *ctx,
 	cedrus_write(dev, VE_H264_SLICE_HDR, reg);
 
 	reg = 0;
+	reg |= BIT(12);
 	reg |= (slice->num_ref_idx_l0_active_minus1 & 0x1f) << 24;
 	reg |= (slice->num_ref_idx_l1_active_minus1 & 0x1f) << 16;
 	reg |= (slice->disable_deblocking_filter_idc & 0x3) << 8;
