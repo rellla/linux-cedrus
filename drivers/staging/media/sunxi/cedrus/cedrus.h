@@ -117,6 +117,7 @@ struct cedrus_ctx {
 			dma_addr_t	neighbor_info_buf_dma;
 			void		*pic_info_buf;
 			dma_addr_t	pic_info_buf_dma;
+			s32		last_frame;
 		} h264;
 		struct {
 			void		*mv_col_buf;

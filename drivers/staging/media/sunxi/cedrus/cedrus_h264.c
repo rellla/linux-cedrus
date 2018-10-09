@@ -364,7 +364,10 @@ static void cedrus_set_params(struct cedrus_ctx *ctx,
 		reg |= BIT(12);
 	reg |= (slice->slice_type & 0xf) << 8;
 	reg |= slice->cabac_init_idc & 0x3;
-	reg |= BIT(5);
+	if (ctx->codec.h264.last_frame != (s32)slice->frame_num) {
+		reg |= BIT(5);
+		ctx->codec.h264.last_frame = slice->frame_num;
+	}
 	if (slice->flags & V4L2_H264_SLICE_FLAG_FIELD_PIC)
 		reg |= BIT(4);
 	if (slice->flags & V4L2_H264_SLICE_FLAG_BOTTOM_FIELD)
@@ -448,6 +451,8 @@ static int cedrus_h264_start(struct cedrus_ctx *ctx)
 {
 	struct cedrus_dev *dev = ctx->dev;
 	int ret;
+
+	ctx->codec.h264.last_frame = -1;
 
 	ctx->codec.h264.pic_info_buf =
 		dma_alloc_coherent(dev->dev, CEDRUS_PIC_INFO_BUF_SIZE,
