@@ -112,6 +112,7 @@ struct cedrus_ctx {
 		struct {
 			void		*mv_col_buf;
 			dma_addr_t	mv_col_buf_dma;
+			ssize_t		mv_col_buf_unit_size;
 			ssize_t		mv_col_buf_size;
 			void		*neighbor_info_buf;
 			dma_addr_t	neighbor_info_buf_dma;
