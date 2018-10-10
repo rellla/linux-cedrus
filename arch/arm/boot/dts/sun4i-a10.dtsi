@@ -164,10 +164,10 @@
 		ranges;
 
 		/* Address must be kept in the lower 256 MiBs of DRAM for VE. */
-		cma_pool: cma@4a000000 {
+		cma_pool: cma@48000000 {
 			compatible = "shared-dma-pool";
-			size = <0x6000000>;
-			alloc-ranges = <0x4a000000 0x6000000>;
+			size = <0x8000000>;
+			alloc-ranges = <0x48000000 0x8000000>;
 			reusable;
 			linux,cma-default;
 		};
