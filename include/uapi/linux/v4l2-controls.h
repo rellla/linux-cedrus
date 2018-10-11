@@ -1235,10 +1235,10 @@ struct v4l2_ctrl_h264_scaling_matrix {
 };
 
 struct v4l2_h264_weight_factors {
-	__s8 luma_weight[32];
-	__s8 luma_offset[32];
-	__s8 chroma_weight[32][2];
-	__s8 chroma_offset[32][2];
+	__s16 luma_weight[32];
+	__s16 luma_offset[32];
+	__s16 chroma_weight[32][2];
+	__s16 chroma_offset[32][2];
 };
 
 struct v4l2_h264_pred_weight_table {
@@ -1303,6 +1303,8 @@ struct v4l2_ctrl_h264_slice_param {
 #define V4L2_H264_DPB_ENTRY_FLAG_VALID		0x01
 #define V4L2_H264_DPB_ENTRY_FLAG_ACTIVE		0x02
 #define V4L2_H264_DPB_ENTRY_FLAG_LONG_TERM	0x04
+#define V4L2_H264_DPB_ENTRY_FLAG_BOTTOM_FIELD	0x10
+#define V4L2_H264_DPB_ENTRY_FLAG_TOP_FIELD	0x20
 
 struct v4l2_h264_dpb_entry {
 	__u32 buf_index; /* v4l2_buffer index */
