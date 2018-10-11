@@ -89,9 +89,6 @@ static void cedrus_write_frame_list(struct cedrus_ctx *ctx,
 	struct cedrus_buffer *output_buf;
 	struct cedrus_dev *dev = ctx->dev;
 	struct vb2_buffer *dst_buf;
-	unsigned long used_dpbs = 0;
-	unsigned int position;
-	unsigned int output = 0;
 	unsigned int i;
 
 	memset(pic_list, 0, sizeof(pic_list));
@@ -106,28 +103,19 @@ static void cedrus_write_frame_list(struct cedrus_ctx *ctx,
 
 		ref_buf = ctx->dst_bufs[dpb->buf_index];
 		cedrus_buf = vb2_to_cedrus_buffer(ref_buf);
-		position = cedrus_buf->codec.h264.position;
-		used_dpbs |= BIT(position);
 
 		if (!(dpb->flags & V4L2_H264_DPB_ENTRY_FLAG_ACTIVE))
 			continue;
 
-		cedrus_fill_ref_pic(&pic_list[position], ctx, dpb->buf_index,
+		cedrus_fill_ref_pic(&pic_list[i], ctx, dpb->buf_index,
 				    dpb->top_field_order_cnt,
 				    dpb->bottom_field_order_cnt,
 				    cedrus_buf->codec.h264.pic_type);
-
-		output = max(position, output);
 	}
-
-	position = find_next_zero_bit(&used_dpbs, 17, output);
-	if (position >= 17)
-		position = find_first_zero_bit(&used_dpbs, 17);
 
 	dst_buf = &run->dst->vb2_buf;
 
 	output_buf = vb2_to_cedrus_buffer(dst_buf);
-	output_buf->codec.h264.position = position;
 
 	if (slice->flags & V4L2_H264_SLICE_FLAG_FIELD_PIC)
 		output_buf->codec.h264.pic_type = CEDRUS_H264_PIC_TYPE_FIELD;
@@ -136,7 +124,7 @@ static void cedrus_write_frame_list(struct cedrus_ctx *ctx,
 	else
 		output_buf->codec.h264.pic_type = CEDRUS_H264_PIC_TYPE_FRAME;
 
-	cedrus_fill_ref_pic(&pic_list[position], ctx, dst_buf->index,
+	cedrus_fill_ref_pic(&pic_list[CEDRUS_H264_FRAME_NUM - 1], ctx, dst_buf->index,
 			    dec_param->top_field_order_cnt,
 			    dec_param->bottom_field_order_cnt,
 			    output_buf->codec.h264.pic_type);
@@ -144,7 +132,7 @@ static void cedrus_write_frame_list(struct cedrus_ctx *ctx,
 	cedrus_h264_write_sram(dev, CEDRUS_SRAM_H264_FRAMEBUFFER_LIST,
 			       pic_list, sizeof(pic_list));
 
-	cedrus_write(dev, VE_H264_OUTPUT_FRAME_IDX, position);
+	cedrus_write(dev, VE_H264_OUTPUT_FRAME_IDX, CEDRUS_H264_FRAME_NUM - 1);
 }
 
 #define CEDRUS_MAX_REF_IDX	32
