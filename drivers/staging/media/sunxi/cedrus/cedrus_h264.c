@@ -156,43 +156,31 @@ static void _cedrus_write_ref_list(struct cedrus_ctx *ctx,
 {
 	const struct v4l2_ctrl_h264_decode_param *decode = run->h264.decode_param;
 	struct cedrus_dev *dev = ctx->dev;
-	u32 sram_array[CEDRUS_MAX_REF_IDX / sizeof(u32)];
-	unsigned int size, i;
+	u8 sram_array[CEDRUS_MAX_REF_IDX];
+	unsigned int i;
 
 	memset(sram_array, 0, sizeof(sram_array));
+	num_ref = min(num_ref, (u8)CEDRUS_MAX_REF_IDX);
 
-	for (i = 0; i < num_ref; i += 4) {
-		unsigned int j;
+	for (i = 0; i < num_ref; i++) {
+		const struct v4l2_h264_dpb_entry *dpb;
+		u8 dpb_idx;
 
-		for (j = 0; j < 4; j++) {
-			const struct v4l2_h264_dpb_entry *dpb;
-			const struct cedrus_buffer *cedrus_buf;
-			const struct vb2_v4l2_buffer *ref_buf;
-			unsigned int position;
-			u8 ref_idx = i + j;
-			u8 dpb_idx;
+		dpb_idx = ref_list[i];
+		dpb = &decode->dpb[dpb_idx];
 
-			if (ref_idx >= num_ref)
-				break;
+		if (!(dpb->flags & V4L2_H264_DPB_ENTRY_FLAG_VALID))
+			continue;
 
-			dpb_idx = ref_list[ref_idx];
-			dpb = &decode->dpb[dpb_idx];
+		if (!(dpb->flags & V4L2_H264_DPB_ENTRY_FLAG_ACTIVE))
+			continue;
 
-			if (!(dpb->flags & V4L2_H264_DPB_ENTRY_FLAG_ACTIVE))
-				continue;
-
-			ref_buf = to_vb2_v4l2_buffer(ctx->dst_bufs[dpb->buf_index]);
-			cedrus_buf = vb2_v4l2_to_cedrus_buffer(ref_buf);
-			position = cedrus_buf->codec.h264.position;
-
-			sram_array[i] |= position << (j * 8 + 1);
-			if (ref_buf->field == V4L2_FIELD_BOTTOM)
-				sram_array[i] |= BIT(j * 8);
-		}
+		sram_array[i] |= dpb_idx << 1;
+		if (dpb->flags & V4L2_H264_DPB_ENTRY_FLAG_BOTTOM_FIELD)
+			sram_array[i] |= BIT(0);
 	}
 
-	size = min((unsigned int)ALIGN(num_ref, 4), sizeof(sram_array));
-	cedrus_h264_write_sram(dev, sram, &sram_array, size);
+	cedrus_h264_write_sram(dev, sram, &sram_array, num_ref);
 }
 
 static void cedrus_write_ref_list0(struct cedrus_ctx *ctx,
