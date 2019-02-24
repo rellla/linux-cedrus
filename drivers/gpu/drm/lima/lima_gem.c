@@ -333,6 +333,9 @@ int lima_gem_submit(struct drm_file *file, struct lima_submit *submit)
 
 	lima_gem_unlock_bos(bos, submit->nr_bos, &ctx);
 
+	for (i = 0; i < submit->nr_bos; i++)
+		drm_gem_object_put_unlocked(&bos[i]->gem);
+
 	if (out_sync) {
 		drm_syncobj_replace_fence(out_sync, fence);
 		drm_syncobj_put(out_sync);
