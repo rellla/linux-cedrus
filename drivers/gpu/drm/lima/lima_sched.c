@@ -302,8 +302,10 @@ static struct dma_fence *lima_sched_run_job(struct drm_sched_job *job)
 static void lima_sched_handle_error_task(struct lima_sched_pipe *pipe,
 					 struct lima_sched_task *task)
 {
-	kthread_park(pipe->base.thread);
-	drm_sched_hw_job_reset(&pipe->base, &task->base);
+	drm_sched_stop(&pipe->base);
+
+	if (&task->base)
+		drm_sched_increase_karma(&task->base);
 
 	pipe->task_error(pipe);
 
@@ -321,8 +323,8 @@ static void lima_sched_handle_error_task(struct lima_sched_pipe *pipe,
 	pipe->current_vm = NULL;
 	pipe->current_task = NULL;
 
-	drm_sched_job_recovery(&pipe->base);
-	kthread_unpark(pipe->base.thread);
+	drm_sched_resubmit_jobs(&pipe->base);
+	drm_sched_start(&pipe->base, true);
 }
 
 static void lima_sched_timedout_job(struct drm_sched_job *job)
